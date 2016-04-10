@@ -22,14 +22,29 @@ public class TwitterFlow {
 		return new DirectChannel();
 	}
 
+	// Tercer paso
+	// Los mensajes se leen de "requestChannel" y se envian al método "sendTweet" del
+	// componente "streamSendingService"
 	@Bean
 	public IntegrationFlow sendTweet() {
+        //
+        // CAMBIOS A REALIZAR:
+        //
+        // Usando Spring Integration DSL
+        //
+        // Filter --> asegurarnos que el mensaje es un Tweet
+        // Transform --> convertir un Tweet en un TargetedTweet con tantos tópicos como coincida
+        // Split --> dividir un TargetedTweet con muchos tópicos en tantos TargetedTweet como tópicos haya
+        // Transform --> señalar el contenido de un TargetedTweet
+        //
 		return IntegrationFlows.from(requestChannel()).
 				handle("streamSendingService", "sendTweet").get();
 	}
 
 }
 
+// Segundo paso
+// Los mensajes recibidos por este @MessagingGateway se dejan en el canal "requestChannel"
 @MessagingGateway(name = "integrationStreamListener", defaultRequestChannel = "requestChannel")
 interface MyStreamListener extends StreamListener {
 

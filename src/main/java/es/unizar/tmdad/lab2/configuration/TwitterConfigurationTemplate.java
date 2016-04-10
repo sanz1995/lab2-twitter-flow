@@ -21,8 +21,7 @@ public class TwitterConfigurationTemplate {
  
     @Bean
     public TwitterTemplate twitterTemplate() {
-        TwitterTemplate twitterOperations = new TwitterTemplate(consumerKey,
+        return new TwitterTemplate(consumerKey,
                 consumerSecret, accessToken, accessTokenSecret);
-        return twitterOperations;
     }
 }
