@@ -58,11 +58,11 @@ public class StreamSendingService {
 		map.put(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
 
 		// Expresión lambda: si el tweet contiene s, devuelve true
-		Predicate<String> notContainsTopic = s -> tweet.getText().contains(s);
+		Predicate<String> containsTopic = s -> tweet.getText().contains(s);
 		// Expresión lambda: envia un tweet al canal asociado al tópico s
 		Consumer<String> convertAndSend = s -> ops.convertAndSend("/queue/search/" + s, tweet, map);
 
-		lookupService.getQueries().stream().filter(notContainsTopic).forEach(convertAndSend);
+		lookupService.getQueries().stream().filter(containsTopic).forEach(convertAndSend);
 	}
 
 	public void sendTweet(TargetedTweet tweet) {
