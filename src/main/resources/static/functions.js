@@ -1,9 +1,8 @@
-var stomptClient = null;
 var subscription = null;
 var newQuery = 0;
 
 function registerTemplate() {
-	template = $("#template").html();
+	var template = $("#template").html();
 	Mustache.parse(template);
 }
 
@@ -12,39 +11,35 @@ function setConnected(connected) {
 	search.prop('disabled', !connected);
 }
 
-function connect() {
-	var socket = new SockJS("/twitter");
-	stompClient = Stomp.over(socket);
-	stompClient.connect({}, function(frame) {
-		setConnected(true);
-		console.log('Connected: ' + frame);
-	})
-}
-
-function registerSendQuery() {
+function registerSendQueryAndConnect() {
+    var socket = new SockJS("/twitter");
+    var stompClient = Stomp.over(socket);
+    stompClient.connect({}, function(frame) {
+        setConnected(true);
+        console.log('Connected: ' + frame);
+    });
 	$("#search").submit(
 			function(event) {
 				event.preventDefault();
 				if (subscription) {
 					subscription.unsubscribe();
 				}
-				stompClient.send("/app/search", {}, $("#q").val());
+				var query = $("#q").val();
+				stompClient.send("/app/search", {}, query);
 				newQuery = 1;
-				subscription = stompClient.subscribe("/queue/search/"
-						+ $("#q").val(), function(data) {
+				subscription = stompClient.subscribe("/queue/search/" + query, function(data) {
+					var resultsBlock = $("#resultsBlock");
 					if (newQuery) {
-						$("#resultsBlock").empty();
+                        resultsBlock.empty();
 						newQuery = 0;
 					}
 					var tweet = JSON.parse(data.body);
-					$("#resultsBlock")
-							.prepend(Mustache.render(template, tweet));
+                    resultsBlock.prepend(Mustache.render(template, tweet));
 				});
 			});
 }
 
 $(document).ready(function() {
 	registerTemplate();
-	registerSendQuery();
-	connect();
+	registerSendQueryAndConnect();
 });

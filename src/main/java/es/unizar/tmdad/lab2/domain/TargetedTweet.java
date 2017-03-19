@@ -1,6 +1,6 @@
 package es.unizar.tmdad.lab2.domain;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class TargetedTweet {
@@ -16,7 +16,7 @@ public class TargetedTweet {
 	
 	public TargetedTweet(MyTweet tweet, String target) {
 		this.tweet = tweet;
-		this.targets = Arrays.asList(target);
+		this.targets = Collections.singletonList(target);
 	}
 
 	public MyTweet getTweet() {
