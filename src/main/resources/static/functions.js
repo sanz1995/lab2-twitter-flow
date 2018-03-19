@@ -2,7 +2,7 @@ var subscription = null;
 var newQuery = 0;
 
 function registerTemplate() {
-	var template = $("#template").html();
+	template = $("#template").html();
 	Mustache.parse(template);
 }
 

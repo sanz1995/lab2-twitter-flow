@@ -6,3 +6,11 @@
 /.settings/
 .classpath
 .project
+
+*.iml
+
+### Excluded due to lab requirements ###
+application.properties
+application-local.properties
+.env
+NOTAS.md
