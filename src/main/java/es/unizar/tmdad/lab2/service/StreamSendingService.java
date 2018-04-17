@@ -11,9 +11,7 @@ import org.springframework.social.twitter.api.impl.TwitterTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Consumer;
 
@@ -44,6 +42,8 @@ public class StreamSendingService {
 		FilterStreamParameters fsp = new FilterStreamParameters();
 		fsp.addLocation(-180, -90, 180, 90);
 
+
+
 		// Primer paso
 		// Registro un gateway para recibir los mensajes
 		// Ver @MessagingGateway en MyStreamListener en TwitterFlow.java
@@ -72,6 +72,15 @@ public class StreamSendingService {
 		// Crea un mensaje que envie un tweet a un único tópico destinatario
 		//
 
+
+		//
+		Map<String, Object> map = new HashMap<>();
+
+		map.put(MessageHeaders.CONTENT_TYPE, MimeTypeUtils.APPLICATION_JSON);
+
+		ops.convertAndSend("/queue/search/" + tweet.getFirstTarget(), tweet.getTweet(), map);
+
+		                	//
 	}
 
 

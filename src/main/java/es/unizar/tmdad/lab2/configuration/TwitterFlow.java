@@ -1,5 +1,9 @@
 package es.unizar.tmdad.lab2.configuration;
 
+import es.unizar.tmdad.lab2.domain.MyTweet;
+import es.unizar.tmdad.lab2.domain.TargetedTweet;
+import es.unizar.tmdad.lab2.service.TwitterLookupService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -10,12 +14,21 @@ import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
 import org.springframework.social.twitter.api.StreamListener;
+import org.springframework.social.twitter.api.Tweet;
+import org.springframework.web.util.HtmlUtils;
+
+
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableIntegration
 @IntegrationComponentScan
 @ComponentScan
 public class TwitterFlow {
+
+
+	@Autowired
+	private TwitterLookupService lookupService;
 
 	@Bean
 	public DirectChannel requestChannel() {
@@ -37,8 +50,18 @@ public class TwitterFlow {
         // Split --> dividir un TargetedTweet con muchos tópicos en tantos TargetedTweet como tópicos haya
         // Transform --> señalar el contenido de un TargetedTweet
         //
-		return IntegrationFlows.from(requestChannel()).
-				handle("streamSendingService", "sendTweet").get();
+
+
+		return IntegrationFlows.from(requestChannel()).filter(t -> t instanceof Tweet)
+				.transform( Tweet.class, t -> new TargetedTweet(new MyTweet(t), lookupService.getQueries().stream()
+												.filter(q -> t.getUnmodifiedText().contains(q)).collect(Collectors.toList())))
+				.split(TargetedTweet.class, t -> ((TargetedTweet)t).getTargets().stream()
+										.map(r -> new TargetedTweet(t.getTweet(), r)).collect(Collectors.toList()))
+				.transform(TargetedTweet.class, t -> {t.getTweet().setUnmodifiedText(t.getTweet().getUnmodifiedText()
+									.replaceAll(t.getFirstTarget(), "<b>"+ HtmlUtils.htmlEscape(t.getFirstTarget())+"</b>")); return t; } )
+				.handle("streamSendingService", "sendTweet").get();
+
+
 	}
 
 }
@@ -47,5 +70,7 @@ public class TwitterFlow {
 // Los mensajes recibidos por este @MessagingGateway se dejan en el canal "requestChannel"
 @MessagingGateway(name = "integrationStreamListener", defaultRequestChannel = "requestChannel")
 interface MyStreamListener extends StreamListener {
+
+
 
 }
